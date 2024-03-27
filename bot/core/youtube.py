@@ -4,11 +4,13 @@ from bot import config
 
 
 def is_valid_yt_url(search: str) -> bool:
-    extractors = yt_dlp.extractor.gen_extractors()
-    for e in extractors:
-        if e.suitable(search):
-            return True
-    return False
+  extractors = yt_dlp.extractor.gen_extractors()
+
+  for extractor in [ext for ext in extractors if ext.IE_NAME == "Youtube"]:
+    if extractor.suitable(search):
+      return True
+    
+  return False
 
 
 async def fetch_video_url_and_title(search: str):
@@ -18,7 +20,7 @@ async def fetch_video_url_and_title(search: str):
 
     is_url = is_valid_yt_url(search)
 
-    if is_url:
+    if is_url:  
         search_term = search
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

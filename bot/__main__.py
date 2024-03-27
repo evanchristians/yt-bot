@@ -1,7 +1,7 @@
 import discord
 import os
 from bot.core.queue import Queue
-from bot.core.logger import logger
+from bot.logger import logger
 
 
 bot = discord.Bot()
