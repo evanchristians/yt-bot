@@ -1,6 +1,6 @@
 import yt_dlp
-from bot.core.logger import logger
-from bot.core import config
+from bot.logger import logger
+from bot import config
 
 
 def is_valid_yt_url(search: str) -> bool:
