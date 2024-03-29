@@ -6,8 +6,8 @@ from bot import config
 def is_valid_yt_url(search: str) -> bool:
   extractors = yt_dlp.extractor.gen_extractors()
 
-  for extractor in [ext for ext in extractors if ext.IE_NAME == "Youtube"]:
-    if extractor.suitable(search):
+  for extractor in extractors:
+    if extractor.IE_NAME != "generic" and extractor.suitable(search):
       return True
     
   return False
