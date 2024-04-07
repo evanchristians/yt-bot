@@ -45,4 +45,8 @@ async def queue(ctx: discord.ApplicationContext):
 async def skip(ctx: discord.ApplicationContext):
     await _queue.skip(ctx)
 
+@bot.slash_command(guild_ids=[GUILD_ID], description="Leave the server and clear the queue")
+async def die(ctx: discord.ApplicationContext):
+    await _queue.die(ctx)
+
 bot.run(os.getenv("BOT_TOKEN"))

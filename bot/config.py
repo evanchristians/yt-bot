@@ -4,11 +4,14 @@ load_dotenv()
 
 
 ydl_opts = {
-    'format': 'bestaudio/best',
+    'format': 'm4a/bestaudio/best',
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
-        'preferredcodec': 'mp3',
-        'preferredquality': '256',
+        'preferredcodec': 'm4a',
+        'preferredquality': '312',
     }],
     'noplaylist': True,
+    'cookiefile' : 'cookies.txt',
+    'ignoreerrors': True,
+    'quiet': True,
 }

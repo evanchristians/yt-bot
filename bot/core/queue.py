@@ -1,5 +1,6 @@
 from enum import Enum
 import discord
+from bot.logger import logger
 from bot.core import youtube
 
 Status = Enum(
@@ -35,7 +36,7 @@ class Queue:
             ),
             None,
         )
-    
+
     def get_current_playing_index(self):
         return next(
             (
@@ -46,20 +47,27 @@ class Queue:
             None,
         )
     
+    async def clear_queue(self, ctx):
+        self.queue = []
+        await ctx.respond("Queue cleared.")
+
+    async def die(self, ctx):
+        self.clear_queue(ctx)
+        if ctx.voice_client is not None:
+            await ctx.voice_client.disconnect()
+        await ctx.respond("Goodbye!")
+
     async def show_queue(self, ctx):
         if len(self.queue) == 0:
             await ctx.respond("Queue is empty.")
             return
 
         queue = "\n".join(
-            [
-                f"{index + 1}. {song['title']}"
-                for index, song in enumerate(self.queue)
-            ]
+            [f"{index + 1}. {song['title']}" for index, song in enumerate(self.queue)]
         )
 
         await ctx.respond(f"Queue:\n{queue}")
-    
+
     async def skip(self, ctx):
         await ctx.response.defer()
         if ctx.voice_client is None:
@@ -69,14 +77,12 @@ class Queue:
         if not ctx.voice_client.is_playing():
             await ctx.respond("I'm not playing anything.")
             return
-        
+
         current_playing = self.get_current_playing_index()
 
         await ctx.respond(f"Skipping - 🎵 {self.queue[current_playing]['title']} 🎵")
 
         ctx.voice_client.stop()
-
-
 
     async def connect_to_voice(self, ctx):
         if ctx.author.voice is None:
@@ -108,7 +114,11 @@ class Queue:
 
         await ctx.respond(f"Playing - 🎵 {self.queue[next_pending]['title']} 🎵")
 
-        args = {"source": self.queue[next_pending]["video_url"]}
+        source = await youtube.fetch_playable_url(self.queue[next_pending]["video_url"])
+        
+        logger.info("we have a src")
+
+        args = {"source": source}
 
         if "options" in self.queue[next_pending]:
             args["options"] = self.queue[next_pending]["options"]
@@ -130,13 +140,24 @@ class Queue:
     ):
         await ctx.response.defer()
 
-        url, title = await youtube.fetch_video_url_and_title(search)
+        is_playlist = await youtube.get_is_playlist(search)
 
-        if url is None:
-            await ctx.respond("No video found.")
-            return
+        logger.info(f"Is playlist: {is_playlist}")
 
-        self.add_to_queue(title, url, options)
+        if is_playlist:
+            urls = await youtube.fetch_playlist_urls(search)
+            logger.info(f"Playlist urls: {urls}")
+
+            for [url, title] in urls:
+                self.add_to_queue(title, url, options)
+        else:
+            url, title = await youtube.fetch_video_url_and_title(search)
+
+            if url is None:
+                await ctx.respond("No video found.")
+                return
+
+            self.add_to_queue(title, url, options)
 
         if (len(self.queue) > 1) and (self.queue[0]["status"] == Status.playing):
             await ctx.respond(f"Added to queue - 🎵 {title} 🎵")

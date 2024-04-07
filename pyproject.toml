@@ -22,3 +22,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.taskipy.tasks]
 start = "python -m bot"
+get_cookies = "python -m yt_dlp --cookies-from-browser=chrome https://www.youtube.com/watch?v=dQw4w9WgXcQ --cookies=cookies.txt"
